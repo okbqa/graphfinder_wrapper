@@ -13,7 +13,8 @@ class GraphFinderWrapperWS < Sinatra::Base
 	end
 
 	before do
-		graphfinder_url = "http://ws.lodqa.org:38502/queries"
+		# graphfinder_url = "http://ws.lodqa.org:38502/queries"
+		graphfinder_url = "http://localhost:9292/queries"
     @graphfinder_ws = RestClient::Resource.new graphfinder_url, :headers => {:content_type => :json, :accept => :json}
 
 		@params = JSON.parse request.body.read, :symbolize_names => true if request.body && request.content_type && request.content_type.downcase == 'application/json'
@@ -41,7 +42,7 @@ class GraphFinderWrapperWS < Sinatra::Base
     end
 
 		content_type :json
-		result.to_json
+		result.map{|r| {query:r, score:0.5}}.to_json
 	end
 
 end
