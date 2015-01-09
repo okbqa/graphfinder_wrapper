@@ -8,12 +8,23 @@ class << GraphFinder
   def okbqa_wrapper (template, disambiguation)
     raise ArgumentError, "Both template and disambiguation need to be supplied." if template.nil? || disambiguation.nil?
 
-    entities = {}
-    template[:slots].each{|s| entities[s[:var]] = s unless s[:annotation] =~ /Property$/}
-    disambiguation[:entities].each{|e| entities[e[:var]].merge!(e)}
+    slots = {}
 
-    properties = {}
-    template[:slots].each{|s| properties[s[:var]] = s if s[:annotation] =~ /Property$/}
+    template[:slots].each do |s|
+      p = s[:p].to_sym
+      p = :form if s[:p] == "verbalization"
+      p = :annotation if s[:p] == "is"
+
+      slots[s[:s]] = {} if slots[s[:s]].nil?
+      slots[s[:s]][p] = s[:o]
+    end
+
+    entities   = slots.select{|s| s["annotation"] !~ /Property$/}.keys
+    properties = slots.select{|s| s["annotation"] =~ /Property$/}.keys
+
+    disambiguation[:entities].each{|e| slots[e[:var]].merge!(e)}
+    disambiguation[:classes].each{|c| slots[c[:var]].merge!(c)}
+    disambiguation[:properties].each{|p| slots[p[:var]].merge!(p)}
 
     striples = []
     triples  = []
@@ -25,7 +36,11 @@ class << GraphFinder
     (0 .. sxp_flat.length - 2).each do |i|
       if sxp_flat[i] == :triple
         striples << sxp_flat[i+1 .. i+3].join(' ')
-        triples  << {subject:sxp_flat[i+1][1..-1], predicate:sxp_flat[i+2][1..-1], object:sxp_flat[i+3][1..-1]}
+        triples  << {
+          subject:sxp_flat[i+1].to_s.gsub!(/^\?/, ''),
+          predicate:sxp_flat[i+2].to_s.gsub!(/^\?/, ''),
+          object:sxp_flat[i+3].to_s.gsub!(/^\?/, '')
+        }
       end
     end
 
@@ -43,9 +58,17 @@ class << GraphFinder
       nodes[t[:subject]] = {}
       nodes[t[:object]] = {}
     end
-    entities.each{|k, v| nodes[k] = {text:v[:form], term:"<#{v[:value]}>", annotation:v[:annotation]}}
+    entities.each do |id|
+      v = slots[id]
+      nodes[id] = {text:v[:form], term:"<#{v[:value]}>", annotation:v[:annotation]}
+    end
 
-    edges = triples.map{|t| p = t[:predicate]; {subject:t[:subject], object:t[:object], text:properties[p][:form], annotation:properties[p][:annotation]}}
+    edges = triples.map do |t|
+      p = t[:predicate]
+      edge = {subject:t[:subject], object:t[:object], text:slots[p][:form], annotation:slots[p][:annotation]}
+      edge[:term] = slots[p][:value]
+      edge
+    end
 
     [{nodes:nodes, edges:edges}, frame]
   end

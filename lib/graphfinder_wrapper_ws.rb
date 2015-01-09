@@ -26,6 +26,7 @@ class GraphFinderWrapperWS < Sinatra::Base
 	post '/queries' do
 		template = params[:template]
 		disambiguation = params[:disambiguation]
+
 		apgp, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
 		data = {apgp:apgp, template:frame}
 

@@ -77,5 +77,60 @@ describe GraphFinder, "okbqa_wrapper" do
 	  	expect(GraphFinder::okbqa_wrapper(@template, @disambiguation)).to eq([@gp, @frame])
 	  end
 	end
+
+	context "for a normal input 2" do
+	  before do
+			@template = {
+				query: "SELECT ?v2 WHERE { ?v2 ?v4 ?v1 . ?v2 ?v3 ?v5 . }",
+				slots: [
+					{s:"v5", p:"is", o:"owl:NamedIndividual"},
+					{s:"v5", p:"verbalization", o:"Gunsan"},
+			    {s:"v1", p:"is", o:"owl:Class"},
+			    {s:"v1", p:"verbalization", o:"rivers" },
+			    {s:"v3", p:"is", o:"owl:Property"},
+			    {s:"v3", p:"verbalization", o:"flow through"},
+			    {s:"v4", p:"is", o:"owl:Property"},
+			    {s:"v4", p:"value", o:"rdf:type"}
+			  ],
+				score: 1
+			}
+			@disambiguation = {
+				score: 1,
+				classes: [
+					{
+						var: "v1",
+						score: 0.25,
+						value: "http://dbpedia.org/ontology/River"
+					},
+					{
+						var: "v1",
+						score: 0.2564102564102564,
+						value: "http://dbpedia.org/ontology/River"
+					}
+				],
+				properties: [
+					{
+						var: "v3",
+						score: 0.2564102564102564,
+						value: "http://dbpedia.org/ontology/city"
+					}
+				],
+				entities: [
+					{
+						var: "v5",
+						score: 1,
+						value: "http://dbpedia.org/resource/Gunsan"
+					}
+				]
+			}
+
+	  end
+
+	  it "should extract a gp from the template" do
+	  	expect(GraphFinder::okbqa_wrapper(@template, @disambiguation)).to eq([])
+	  end
+	end
+
+
 end
 
