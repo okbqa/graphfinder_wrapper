@@ -10,26 +10,33 @@ class << GraphFinder
 
     slots = {}
 
-    template[:slots].each do |s|
-      p = s[:p].to_sym
-      p = :form if s[:p] == "verbalization"
-      p = :annotation if s[:p] == "is"
+    template["slots"].each do |s|
+      p = s["p"]
+      p = "form" if s["p"] == "verbalization"
+      p = "type" if s["p"] == "is"
 
-      slots[s[:s]] = {} if slots[s[:s]].nil?
-      slots[s[:s]][p] = s[:o]
+      slots[s["s"]] = {} if slots[s["s"]].nil?
+      slots[s["s"]][p] = s["o"]
     end
 
-    entities   = slots.select{|s| s["annotation"] !~ /Property$/}.keys
-    properties = slots.select{|s| s["annotation"] =~ /Property$/}.keys
+    entities = []
+    properties = []
+    slots.each do |k, v|
+      if v["type"] =~ /Property$/ then
+        properties << k
+      else
+        entities << k
+      end
+    end
 
-    disambiguation[:entities].each{|e| slots[e[:var]].merge!(e)}
-    disambiguation[:classes].each{|c| slots[c[:var]].merge!(c)}
-    disambiguation[:properties].each{|p| slots[p[:var]].merge!(p)}
+    disambiguation["entities"].each{|e| slots[e["var"]].merge!(e)}
+    disambiguation["classes"].each{|c| slots[c["var"]].merge!(c)}
+    disambiguation["properties"].each{|p| slots[p["var"]].merge!(p)}
 
     striples = []
     triples  = []
 
-    query = template[:query].gsub(/ +/, ' ')
+    query = template["query"].gsub(/ +/, ' ')
     sse = SPARQL.parse query
     sxp = SXP.read sse.to_sxp
     sxp_flat = sxp.flatten
@@ -37,9 +44,9 @@ class << GraphFinder
       if sxp_flat[i] == :triple
         striples << sxp_flat[i+1 .. i+3].join(' ')
         triples  << {
-          subject:sxp_flat[i+1].to_s.gsub!(/^\?/, ''),
-          predicate:sxp_flat[i+2].to_s.gsub!(/^\?/, ''),
-          object:sxp_flat[i+3].to_s.gsub!(/^\?/, '')
+          "subject" => sxp_flat[i+1].to_s.gsub!(/^\?/, ''),
+          "predicate" => sxp_flat[i+2].to_s.gsub!(/^\?/, ''),
+          "object" => sxp_flat[i+3].to_s.gsub!(/^\?/, '')
         }
       end
     end
@@ -52,24 +59,43 @@ class << GraphFinder
         frame.gsub!(/#{t.gsub(/\?/, '\?')} ?\./, '')
       end
     end
+    frame.gsub!(/ +/, ' ')
 
     nodes = {}
     triples.each do |t|
-      nodes[t[:subject]] = {}
-      nodes[t[:object]] = {}
+      nodes[t["subject"]] = {}
+      nodes[t["object"]] = {}
     end
     entities.each do |id|
       v = slots[id]
-      nodes[id] = {text:v[:form], term:"<#{v[:value]}>", annotation:v[:annotation]}
+      nodes[id] = {"text" => v["form"], "term" => termify(v["value"]), "type" => v["type"]}
     end
 
-    edges = triples.map do |t|
-      p = t[:predicate]
-      edge = {subject:t[:subject], object:t[:object], text:slots[p][:form], annotation:slots[p][:annotation]}
-      edge[:term] = slots[p][:value]
-      edge
+    relations = {}
+    triples.each do |t|
+      p = t["predicate"]
+      relation = {"subject" => t["subject"], "object" => t["object"]}
+      relation["text"] = slots[p]["form"] unless slots[p]["form"].nil?
+      relation["type"] = slots[p]["type"] unless slots[p]["type"].nil?
+      unless slots[p]["value"].nil?
+        if slots[p]["value"] == 'SORTAL'
+          relation["type"] = 'gf:Sortal'
+        else
+          relation["term"] = termify(slots[p]["value"])
+        end
+      end
+      relations[p] = relation
     end
 
-    [{nodes:nodes, edges:edges}, frame]
+    [{"nodes" => nodes, "relations" => relations}, frame]
   end
+
+  def termify (exp)
+    if exp =~ /^https?:/
+      "<#{exp}>"
+    else
+      exp
+    end
+  end
+
 end

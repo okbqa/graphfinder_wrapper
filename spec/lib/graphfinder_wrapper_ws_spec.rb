@@ -1,46 +1,28 @@
 require 'spec_helper'
 
 describe GraphFinderWrapperWS, "index" do
-	context "the path: get /" do
-	  it "should respond with 'ok' for 'get'" do
+	context "for the request GET /" do
+	  it "should respond with 'OK'" do
 	    get '/'
 	    expect(last_response).to be_ok
 		end
 	end
 
-	context "the path: post /queries" do
+	context "for the request POST /queries" do
 		before do
-	  	@template = {
-				query: "SELECT ?v2 WHERE { ?v1 ?p1 ?v2 . } ", 
-			  slots: [
-			  	{var: "v1", form: "Free University in Amsterdam", annotation: "owl:NamedIndividual" }, 
-			    {var: "p1", form: "students", annotation: "owl:DatatypeProperty" } 
-			  ], 
-			  score: 0.5
-    	}
-
-    	@disambiguation = {
-    		score:0.3,
-				entities: [
-					{
-						var: "v1", 
-            value: "http://dbpedia.org/resource/Free_University_of_Berlin",
-            score: 0.3
-					}
-    		],
-				properties: [
-					{
-          	var: "p1",
-          	value: "http://dbpedia.org/property/students",
-          	score: 0.7
-					}
-				]
-    	}
+	  	@input = JSON.parse IO.read("spec/fixtures/query_generation_input_1.json")
+	  	@output = JSON.parse IO.read("spec/fixtures/sparqlator_output_1.json")
+	  	@output.map!{|q| {"query" => q, "score" => 0.5}}
 		end
 
-	  it "should respond with 'ok' for 'post'" do
+	  it "should respond with an error message for not passing necessary input." do
 	    post '/queries'
-	    expect(last_response).to be_ok
+	    expect(last_response.status).to eq(400)
+		end
+
+	  it "should respond properly" do
+	    post '/queries', @input
+	    expect(JSON.parse last_response.body).to eq(@output)
 		end
 
 	end
