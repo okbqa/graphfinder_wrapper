@@ -29,7 +29,7 @@ class GraphFinderWrapperWS < Sinatra::Base
 		disambiguation = params[:disambiguation]
 
 		apgp, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
-		data = {apgp:apgp, template:frame}
+		data = {apgp:apgp, frame:frame}
 
 		result = 
     @graphfinder_ws.post data.to_json do |response, request, result|
