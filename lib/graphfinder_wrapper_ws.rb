@@ -17,7 +17,7 @@ class GraphFinderWrapperWS < Sinatra::Base
 		# graphfinder_url = "http://localhost:9292/queries"
     @graphfinder_ws = RestClient::Resource.new graphfinder_url, :headers => {:content_type => :json, :accept => :json}
 
-		@params = JSON.parse request.body.read, :symbolize_names => true if request.body && request.content_type && request.content_type.downcase == 'application/json'
+		@params = JSON.parse request.body.read if request.body && request.content_type && request.content_type.downcase == 'application/json'
 	end
 
 	get '/' do
@@ -25,11 +25,11 @@ class GraphFinderWrapperWS < Sinatra::Base
 	end
 
 	post '/queries' do
-		template = params[:template]
-		disambiguation = params[:disambiguation]
+		template = params["template"]
+		disambiguation = params["disambiguation"]
 
 		apgp, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
-		data = {apgp:apgp, frame:frame}
+		data = {"apgp" => apgp, "frame" => frame}
 
 		result = 
     @graphfinder_ws.post data.to_json do |response, request, result|
