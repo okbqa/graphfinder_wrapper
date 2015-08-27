@@ -1,6 +1,9 @@
 GraphFinder Wrapper for OKBQA
 =============================
 
+It is a wrapper WS to call the GraphFinder::spaqlator method from the OKBQA framework.
+The project GraphFinder is at https://github.com/lodqa/graphfinder.
+
 Input
 -----
 
