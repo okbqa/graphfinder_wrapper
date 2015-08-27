@@ -39,6 +39,7 @@ class << GraphFinder
     query = template["query"].gsub(/ +/, ' ')
     sse = SPARQL.parse query
     sxp = SXP.read sse.to_sxp
+
     sxp_flat = sxp.flatten
     (0 .. sxp_flat.length - 2).each do |i|
       if sxp_flat[i] == :triple
@@ -54,9 +55,10 @@ class << GraphFinder
     frame = query
     striples.each_with_index do |t, i|
       if i == 0
-        frame.gsub!(/#{t.gsub(/\?/, '\?')} ?\./, '_BGP_')
+        frame.gsub!(/#{t.gsub(/\?/, '\?')} ?[.;]/, '_BGP_')
       else
-        frame.gsub!(/#{t.gsub(/\?/, '\?')} ?\./, '')
+        frame.gsub!(/#{t.gsub(/\?/, '\?')} ?[.;]/, '')
+        frame.gsub!(/#{t.sub(/[^ .;]+ +/, '').gsub(/\?/, '\?')} ?[.;]/, '')
       end
     end
     frame.gsub!(/ +/, ' ')
