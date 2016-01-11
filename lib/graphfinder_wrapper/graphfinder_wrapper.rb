@@ -14,7 +14,8 @@ class << GraphFinder
     template["slots"].each do |s|
       if s["o"] == '<http://lodqa.org/vocabulary/sort_of>'
         slots[s["s"]] = {}
-        slots[s["s"]]["value"] = s["o"]
+        slots[s["s"]]["type"] = 'rdf:Property'
+        slots[s["s"]]["form"] = 'SORTAL'
       else
         p = s["p"]
         p = "form" if s["p"] == "verbalization"
@@ -86,8 +87,8 @@ class << GraphFinder
       relation["text"] = slots[p]["form"] unless slots[p]["form"].nil?
       relation["type"] = slots[p]["type"] unless slots[p]["type"].nil?
       unless slots[p]["type"].nil?
-        if slots[p]["type"] == '<http://lodqa.org/vocabulary/sort_of>'
-          relation["type"] = 'gf:Sortal'
+        if slots[p]["form"] == 'SORTAL'
+          relation["term"] = 'SORTAL'
         else
           relation["term"] = termify(slots[p]["value"])
         end
