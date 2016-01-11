@@ -7,16 +7,22 @@ class << GraphFinder
   # for OKBQA interface
   def okbqa_wrapper (template, disambiguation)
     raise ArgumentError, "Both template and disambiguation need to be supplied." if template.nil? || disambiguation.nil?
+    disambiguation = disambiguation.first if disambiguation.is_a? Array
 
     slots = {}
 
     template["slots"].each do |s|
-      p = s["p"]
-      p = "form" if s["p"] == "verbalization"
-      p = "type" if s["p"] == "is"
+      if s["o"] == '<http://lodqa.org/vocabulary/sort_of>'
+        slots[s["s"]] = {}
+        slots[s["s"]]["value"] = s["o"]
+      else
+        p = s["p"]
+        p = "form" if s["p"] == "verbalization"
+        p = "type" if s["p"] == "is"
 
-      slots[s["s"]] = {} if slots[s["s"]].nil?
-      slots[s["s"]][p] = s["o"]
+        slots[s["s"]] = {} if slots[s["s"]].nil?
+        slots[s["s"]][p] = s["o"]
+      end
     end
 
     entities = []
@@ -28,6 +34,10 @@ class << GraphFinder
         entities << k
       end
     end
+
+    p slots
+    puts "-----"
+    p disambiguation["entities"]
 
     disambiguation["entities"].each{|e| slots[e["var"]].merge!(e)}
     disambiguation["classes"].each{|c| slots[c["var"]].merge!(c)}
