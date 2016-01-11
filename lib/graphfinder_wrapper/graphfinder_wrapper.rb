@@ -35,10 +35,6 @@ class << GraphFinder
       end
     end
 
-    p slots
-    puts "-----"
-    p disambiguation["entities"]
-
     disambiguation["entities"].each{|e| slots[e["var"]].merge!(e)}
     disambiguation["classes"].each{|c| slots[c["var"]].merge!(c)}
     disambiguation["properties"].each{|p| slots[p["var"]].merge!(p)}
