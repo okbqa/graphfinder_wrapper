@@ -4,6 +4,23 @@ GraphFinder Wrapper for OKBQA
 It is a wrapper WS to call the GraphFinder::spaqlator method from the OKBQA framework.
 The project GraphFinder is at https://github.com/lodqa/graphfinder.
 
+Prerequisite
+-----
+You need to install and deploy graphfinder, beforehand.
+
+Interpreter
+-----
+ruby-2.1.2
+
+Install
+-----
+(after cloning)
+bundle install
+
+Deploy
+-----
+rackup -p port_number -E production -D
+
 Input
 -----
 
