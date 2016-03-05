@@ -14,7 +14,6 @@ class GraphFinderWrapperWS < Sinatra::Base
 
 	before do
 		graphfinder_url = "http://ws.okbqa.org:38400/queries"
-		# graphfinder_url = "http://ws.lodqa.org:38502/queries"
 		# graphfinder_url = "http://localhost:9292/queries"
     @graphfinder_ws = RestClient::Resource.new graphfinder_url, :headers => {:content_type => :json, :accept => :json}
 
@@ -27,9 +26,6 @@ class GraphFinderWrapperWS < Sinatra::Base
 			end
 			params.merge!(json_params) unless json_params.nil?
 		end
-
-
-			# @params = JSON.parse request.body.read 
 	end
 
 	get '/' do
@@ -46,6 +42,7 @@ class GraphFinderWrapperWS < Sinatra::Base
 
 			apgp, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
 			data = {"apgp" => apgp, "frame" => frame}
+			data["max_hop"] = params["max_hop"].to_i unless params["max_hop"].nil?
 
 			result = 
 	    @graphfinder_ws.post data.to_json do |response, request, result|
@@ -59,9 +56,9 @@ class GraphFinderWrapperWS < Sinatra::Base
 
 			content_type :json
 			result.map{|r| {query:r, score:0.5}}.to_json
-		# rescue => e
-		# 	content_type :json
-		# 	{message: e.message}.to_json
+		rescue => e
+			content_type :json
+			{message: e.message}.to_json
 		end
 	end
 
