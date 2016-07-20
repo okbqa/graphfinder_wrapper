@@ -41,13 +41,8 @@ class GraphFinderWrapperWS < Sinatra::Base
 			template = params["template"]
 			disambiguation = params["disambiguation"]
 
-<<<<<<< HEAD
 			apgps, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
-=======
-			apgp, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
-			data = {"apgp" => apgp, "frame" => frame}
 			data["max_hop"] = params["max_hop"].to_i unless params["max_hop"].nil?
->>>>>>> 4a8e834f9c90b7d954d5cd0aa7a54f1c5ed6c217
 
 			results = []
 			apgps.each do |apgp|
@@ -55,11 +50,13 @@ class GraphFinderWrapperWS < Sinatra::Base
 				results += GraphFinder::sparqlator(apgp, template["query"])
 
 				data = {"apgp" => apgp, "frame" => frame}
+				data["max_hop"] = params["max_hop"].to_i unless params["max_hop"].nil?
+
 				results += @graphfinder_ws.post data.to_json do |response, request, result|
 					case response.code
 					when 200
 						res = JSON.parse response
-						res.map{|r| {query:r, score:0.5}}
+						res.map{|r| {query:r, score:0.4}}
 					else
 						raise "Something wrong"
 					end
@@ -70,12 +67,6 @@ class GraphFinderWrapperWS < Sinatra::Base
 			results.to_json
 		rescue => e
 			content_type :json
-<<<<<<< HEAD
-=======
-			result.map{|r| {query:r, score:0.5}}.to_json
-		rescue => e
-			content_type :json
->>>>>>> 4a8e834f9c90b7d954d5cd0aa7a54f1c5ed6c217
 			{message: e.message}.to_json
 		end
 	end
