@@ -4,6 +4,7 @@ require 'rest_client'
 require 'erb'
 require 'graphfinder_wrapper'
 require 'json'
+require 'pp'
 
 class GraphFinderWrapperWS < Sinatra::Base
 	configure do
@@ -44,24 +45,30 @@ class GraphFinderWrapperWS < Sinatra::Base
 			template = params["template"]
 			disambiguation = params["disambiguation"]
 
-			apgp, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
-			data = {"apgp" => apgp, "frame" => frame}
+			apgps, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
 
-			result = 
-	    @graphfinder_ws.post data.to_json do |response, request, result|
-	      case response.code
-	      when 200
-	        JSON.parse response
-	      else
-	      	raise "Something wrong"
-	      end
-	    end
+			results = []
+			apgps.each do |apgp|
+
+				results += GraphFinder::sparqlator(apgp, template["query"])
+
+				data = {"apgp" => apgp, "frame" => frame}
+				results += @graphfinder_ws.post data.to_json do |response, request, result|
+					case response.code
+					when 200
+						res = JSON.parse response
+						res.map{|r| {query:r, score:0.5}}
+					else
+						raise "Something wrong"
+					end
+				end
+			end
 
 			content_type :json
-			result.map{|r| {query:r, score:0.5}}.to_json
-		# rescue => e
-		# 	content_type :json
-		# 	{message: e.message}.to_json
+			results.to_json
+		rescue => e
+			content_type :json
+			{message: e.message}.to_json
 		end
 	end
 
