@@ -65,9 +65,9 @@ class GraphFinderWrapperWS < Sinatra::Base
 
 			content_type :json
 			results.to_json
-		rescue => e
-			content_type :json
-			{message: e.message}.to_json
+		# rescue => e
+		# 	content_type :json
+		# 	{message: e.message}.to_json
 		end
 	end
 

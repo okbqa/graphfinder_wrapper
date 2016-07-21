@@ -15,18 +15,6 @@
 	},
 	"disambiguation": {
 		"score": 1,
-		"classes": [
-			{
-				"var": "v1",
-				"score": 0.25,
-				"value": "http://dbpedia.org/ontology/River"
-			},
-			{
-				"var": "v1",
-				"score": 0.2564102564102564,
-				"value": "http://dbpedia.org/ontology/River"
-			}
-		],
 		"properties": [
 			{
 				"var": "v3",

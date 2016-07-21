@@ -40,9 +40,9 @@ class << GraphFinder
     # Index disambiguation results
     disambig_idx = {}
 
-    disambiguation["entities"].each{|e| (disambig_idx[e["var"]] ||= []) << e}
-    disambiguation["classes"].each{|c| (disambig_idx[c["var"]] ||= []) << c}
-    disambiguation["properties"].each{|p| (disambig_idx[p["var"]] ||= []) << p}
+    disambiguation["entities"].each{|e| (disambig_idx[e["var"]] ||= []) << e} if disambiguation["entities"]
+    disambiguation["classes"].each{|c| (disambig_idx[c["var"]] ||= []) << c} if disambiguation["classes"]
+    disambiguation["properties"].each{|p| (disambig_idx[p["var"]] ||= []) << p} if disambiguation["properties"]
 
     # get triples from template
     striples = []
