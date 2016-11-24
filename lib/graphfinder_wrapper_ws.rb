@@ -47,7 +47,7 @@ class GraphFinderWrapperWS < Sinatra::Base
 			results = []
 			apgps.each do |apgp|
 
-				results += GraphFinder::sparqlator(apgp, template["query"])
+				results += GraphFinder::sparqlator(apgp, template["query"].dup)
 
 				data = {"apgp" => apgp, "frame" => frame}
 				data["max_hop"] = params["max_hop"].to_i unless params["max_hop"].nil?
