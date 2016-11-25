@@ -155,7 +155,7 @@ class << GraphFinder
       queries = ibgps.map {|b| frame.sub('_BGP_', b.join(" . "))}
       queries.map.with_index do |query, i|
         score = (i == 0) ? 0.8 : 0.7
-        {"query" => query, "score" => score}
+        {query: query, score: score}
       end
     else
       []

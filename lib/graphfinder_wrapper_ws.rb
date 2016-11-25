@@ -63,6 +63,8 @@ class GraphFinderWrapperWS < Sinatra::Base
 				end
 			end
 
+			results.sort!{|a, b| b[:score] <=> a[:score]}
+
 			content_type :json
 			results.to_json
 		rescue => e
