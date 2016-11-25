@@ -41,13 +41,13 @@ class GraphFinderWrapperWS < Sinatra::Base
 			template = params["template"]
 			disambiguation = params["disambiguation"]
 
-			apgps, frame = GraphFinder::okbqa_wrapper(template, disambiguation)
+			apgps, frame, striples = GraphFinder::okbqa_wrapper(template, disambiguation)
 			data["max_hop"] = params["max_hop"].to_i unless params["max_hop"].nil?
 
 			results = []
 			apgps.each do |apgp|
 
-				results += GraphFinder::sparqlator(apgp, template["query"].dup)
+				results += GraphFinder::sparqlator(apgp, frame, striples)
 
 				data = {"apgp" => apgp, "frame" => frame}
 				data["max_hop"] = params["max_hop"].to_i unless params["max_hop"].nil?
@@ -65,9 +65,9 @@ class GraphFinderWrapperWS < Sinatra::Base
 
 			content_type :json
 			results.to_json
-		# rescue => e
-		# 	content_type :json
-		# 	{message: e.message}.to_json
+		rescue => e
+			content_type :json
+			{message: e.message}.to_json
 		end
 	end
 
