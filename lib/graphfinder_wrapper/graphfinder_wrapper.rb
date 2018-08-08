@@ -100,7 +100,7 @@ class << GraphFinder
         relation["text"] = slots[p]["form"] unless slots[p]["form"].nil?
         relation["type"] = slots[p]["type"] unless slots[p]["type"].nil?
         unless slots[p]["type"].nil?
-          if slots[p]["value"] == 'SORTAL'
+          if slots[p]["form"] == 'SORTAL'
             relation["type"] = 'gf:Sortal'
           else
             relation["term"] = termify(disambig[p])
